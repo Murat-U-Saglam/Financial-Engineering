@@ -1,0 +1,25 @@
+version: '0.1'
+services:
+  app:
+    build: .
+    container_name: streamlit
+    volumes:
+      - ./src:/src
+    ports:
+      - "6161:6161"
+    depends_on:
+      - database
+
+  database:
+    image: mysql:9.0.0
+    container_name: ${MYSQL_CONTAINER_NAME}
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - "${MYSQL_PORT}:${MYSQL_PORT}"
+    volumes:
+      - ./mysql:/var/lib/mysql
+  
