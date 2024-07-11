@@ -1,3 +1,6 @@
 mysql/
 venv/
+.ruff_cache/
 .env
+*__pycache__/
+stock_data.db

@@ -1,16 +1,21 @@
-version: '0.1'
+version: '3.8'
 services:
   app:
     build:
       context: .
       dockerfile: ./Dockerfile
-    container_name: streamlit
-    command: 
-      ["bash", "-c", "streamlit run src/main.py --server.port=6161 --server.address=0.0.0.0 --server.runOnSave=True"]
+    container_name: streamlit-debug
     volumes:
       - .:/src
     ports:
       - "6161:6161"
+      - "5678:5678" # Port for debugging
+    environment:
+      - PYTHONUNBUFFERED=1
+      - DEBUG=True # Optional: Set an environment variable to indicate debugging mode
+    command: >
+      bash -c "pip install debugpy && 
+               python -m debugpy --wait-for-client --listen 0.0.0.0:5678 -m streamlit run src/main.py --server.port=6161 --server.address=0.0.0.0 --server.runOnSave=True"
     depends_on:
       - database
 
@@ -26,4 +31,3 @@ services:
       - "${MYSQL_PORT}:${MYSQL_PORT}"
     volumes:
       - ./mysql:/var/lib/mysql
-  
