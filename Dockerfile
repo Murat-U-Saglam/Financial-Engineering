@@ -19,9 +19,15 @@ COPY ./requirements.txt /src/requirements.txt
 
 RUN pip3 install -r requirements.txt
 
-RUN pip3 install yfinance
+ARG FRONTEND_PORT
 
-EXPOSE 6161 5678 
+ARG FRONTEND_DEBUGGING_PORT
+
+ENV FRONTEND_PORT=${FRONTEND_PORT}
+
+ENV FRONTEND_DEBUGGING_PORT=${FRONTEND_DEBUGGING_PORT}
+
+EXPOSE ${FRONTEND_PORT} ${FRONTEND_DEBUGGING_PORT} 
 
 HEALTHCHECK CMD curl --fail http://localhost:6161/_stcore/health
 

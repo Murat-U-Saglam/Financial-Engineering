@@ -1,21 +1,44 @@
-version: '3.8'
+version: '0.1'
 services:
-  app:
+  frontend:
     build:
-      context: .
-      dockerfile: ./Dockerfile
-    container_name: streamlit-debug
-    volumes:
-      - .:/src
-    ports:
-      - "6161:6161"
-      - "5678:5678" # Port for debugging
+      context: ./src/frontend
+      dockerfile: Dockerfile
+      args:
+        - FRONTEND_PORT=${FRONTEND_PORT}
+        - FRONTEND_DEBUGGING_PORT=${FRONTEND_DEBUGGING_PORT}
+    container_name: ${FRONTEND_CONTAINER_NAME}
     environment:
+      - FRONTEND_PORT=${FRONTEND_PORT}
+      - FRONTEND_DEBUGGING_PORT=${FRONTEND_DEBUGGING_PORT}
       - PYTHONUNBUFFERED=1
       - DEBUG=True # Optional: Set an environment variable to indicate debugging mode
     command: >
       bash -c "pip install debugpy && 
-               python -m debugpy --wait-for-client --listen 0.0.0.0:5678 -m streamlit run src/main.py --server.port=6161 --server.address=0.0.0.0 --server.runOnSave=True"
+               python -m debugpy --wait-for-client --listen 0.0.0.0:${FRONTEND_DEBUGGING_PORT} -m streamlit run app/main.py --server.port=${FRONTEND_DEBUGGING_PORT} --server.address=0.0.0.0 --server.runOnSave=True"
+    volumes:
+      - ./src/backend:/src
+    ports:
+      - "${FRONTEND_DEBUGGING_PORT}:${FRONTEND_DEBUGGING_PORT}"
+    depends_on:
+      - backend
+  
+  backend:
+    build:
+      context: ./src/backend
+      dockerfile: Dockerfile
+      args:
+        - BACKEND_PORT=${BACKEND_PORT}
+        - BACKEND_DEBUGGING_PORT=${BACKEND_DEBUGGING_PORT}
+    container_name: ${BACKEND_CONTAINER_NAME}
+    environment:
+      - BACKEND_PORT=${BACKEND_PORT}
+      - BACKEND_DEBUGGING_PORT=${BACKEND_DEBUGGING_PORT}
+    command: ["sh", "-c", "pip install debugpy -t /tmp && python /tmp/debugpy --wait-for-client --listen 0.0.0.0:${BACKEND_DEBUGGING_PORT} -m uvicorn app.main:app  --host 0.0.0.0 --port ${BACKEND_DEBUGGING_PORT} --reload"]
+    ports:
+      - "${BACKEND_DEBUGGING_PORT}:${BACKEND_DEBUGGING_PORT}"
+    volumes:
+      - ./src/backend:/src
     depends_on:
       - database
 

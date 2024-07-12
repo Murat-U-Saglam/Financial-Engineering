@@ -1,16 +1,42 @@
 version: '0.1'
 services:
-  app:
+  frontend:
     build:
-      context: .
-      dockerfile: ./Dockerfile
-    container_name: streamlit
+      context: ./src/frontend
+      dockerfile: Dockerfile
+      args:
+        - FRONTEND_PORT=${FRONTEND_PORT}
+        - FRONTEND_DEBUGGING_PORT=${FRONTEND_DEBUGGING_PORT}
+    container_name: ${FRONTEND_CONTAINER_NAME}
+    tty: true
+    environment:
+      - FRONTEND_PORT=${FRONTEND_PORT}
+      - FRONTEND_DEBUGGING_PORT=${FRONTEND_DEBUGGING_PORT}
     command: 
-      ["bash", "-c", "streamlit run src/main.py --server.port=6161 --server.address=0.0.0.0 --server.runOnSave=True"]
+      ["bash", "-c", "streamlit run app/main.py --server.port=${FRONTEND_PORT} --server.address=0.0.0.0 --server.runOnSave=True"]
     volumes:
-      - .:/src
+      - ./src/frontend:/src
     ports:
-      - "6161:6161"
+      - "${FRONTEND_PORT}:${FRONTEND_PORT}"
+    depends_on:
+      - backend
+  
+  backend:
+    build:
+      context: ./src/backend
+      dockerfile: Dockerfile
+      args:
+        - BACKEND_PORT=${BACKEND_PORT}
+        - BACKEND_DEBUGGING_PORT=${BACKEND_DEBUGGING_PORT}
+    container_name: ${BACKEND_CONTAINER_NAME}
+    environment:
+      - BACKEND_PORT=${BACKEND_PORT}
+      - BACKEND_DEBUGGING_PORT=${BACKEND_DEBUGGING_PORT}
+    command: uvicorn app.main:app --reload --workers 1 --host 0.0.0.0 --port ${BACKEND_PORT}
+    ports:
+      - "${BACKEND_PORT}:${BACKEND_PORT}"
+    volumes:
+      - ./src/backend:/src
     depends_on:
       - database
 
