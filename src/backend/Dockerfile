@@ -2,11 +2,10 @@
 FROM python:3.12-slim-bullseye
 
 # set work directory
-WORKDIR /src
+WORKDIR /backend
 
-ARG BACKEND_PORT=${BACKEND_PORT} 
-
-ARG BACKEND_DEBUGGING_PORT=${BACKEND_DEBUGGING_PORT}
+ARG BACKEND_PORT
+ARG BACKEND_DEBUGGING_PORT
 
 EXPOSE ${BACKEND_PORT} ${BACKEND_DEBUGGING_PORT}
 
@@ -17,14 +16,11 @@ ENV PYTHONUNBUFFERED 1
 # Upgrade pip 
 RUN python -m pip install --upgrade pip
 
-WORKDIR /backend/app
-
 # copy requirements file
-COPY ./requirements.txt requirements.txt
+COPY requirements.txt requirements.txt
 
 # install dependencies
 RUN pip3 install --no-cache-dir -r requirements.txt
 
-# copy project
-COPY . .
-
+# Copy the rest of the application
+COPY . /backend

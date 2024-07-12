@@ -8,14 +8,13 @@ services:
         - FRONTEND_PORT=${FRONTEND_PORT}
         - FRONTEND_DEBUGGING_PORT=${FRONTEND_DEBUGGING_PORT}
     container_name: ${FRONTEND_CONTAINER_NAME}
-    tty: true
     environment:
       - FRONTEND_PORT=${FRONTEND_PORT}
       - FRONTEND_DEBUGGING_PORT=${FRONTEND_DEBUGGING_PORT}
     command: 
       ["bash", "-c", "streamlit run app/main.py --server.port=${FRONTEND_PORT} --server.address=0.0.0.0 --server.runOnSave=True"]
     volumes:
-      - ./src/frontend:/src
+      - ./src/frontend:/frontend
     ports:
       - "${FRONTEND_PORT}:${FRONTEND_PORT}"
     depends_on:
@@ -36,7 +35,7 @@ services:
     ports:
       - "${BACKEND_PORT}:${BACKEND_PORT}"
     volumes:
-      - ./src/backend:/src
+      - ./src/backend:/backend
     depends_on:
       - database
 
@@ -52,4 +51,3 @@ services:
       - "${MYSQL_PORT}:${MYSQL_PORT}"
     volumes:
       - ./mysql:/var/lib/mysql
-  
