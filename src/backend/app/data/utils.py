@@ -98,3 +98,9 @@ def delete_all_stock_data(stock_data: StockDataModel) -> None:
             session.commit()
         else:
             return None
+        
+def update_stock_data(stock_data: StockDataModel) -> None:
+    """
+    NOT NEEDED SINCE IT SHOULD ALWAYS BE THE SAME MAYBE A FUNCTION TO CHANGE THE TAIL AND HEAD OF THE DATA
+    """
+    pass
