@@ -17,8 +17,10 @@ app = FastAPI(
 async def root():
     return {"message": "Hello World"}
 
+
 @app.get("/ping")
 async def ping():
     return {"ping": "a"}
+
 
 app.include_router(data_router, prefix="/data", tags=["data"])

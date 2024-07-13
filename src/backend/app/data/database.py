@@ -16,4 +16,8 @@ async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
 
 
 def get_session() -> Generator[Session, None]:
-    pass
+    DATABASE_URL = f"mysql+mysqlconnector://{Config.MYSQL_USER}:{Config.MYSQL_PASSWORD}@{Config.MYSQL_HOST}:{Config.MYSQL_PORT}/{Config.MYSQL_DATABASE}"
+    engine = create_async_engine(DATABASE_URL, echo=True)
+    session = sessionmaker(bind=engine)
+    with session() as session:
+        yield session

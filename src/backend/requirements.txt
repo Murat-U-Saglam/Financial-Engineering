@@ -3,13 +3,16 @@ annotated-types==0.7.0
 anyio==4.4.0
 appdirs==1.4.4
 attrs==23.2.0
+Backtesting==0.3.3
 beautifulsoup4==4.12.3
 blinker==1.8.2
+bokeh==3.5.0
 bs4==0.0.2
 cachetools==5.3.3
 certifi==2024.7.4
 charset-normalizer==3.3.2
 click==8.1.7
+contourpy==1.2.1
 cssselect==1.2.0
 debugpy==1.8.2
 dnspython==2.6.1
@@ -92,5 +95,6 @@ watchdog==4.0.1
 watchfiles==0.22.0
 webencodings==0.5.1
 websockets==10.4
+xyzservices==2024.6.0
 yfinance==0.2.40
 zipp==3.19.2
