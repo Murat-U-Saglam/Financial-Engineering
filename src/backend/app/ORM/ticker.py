@@ -3,9 +3,9 @@ from sqlalchemy import (
     String,
     Date,
     Integer,
-    ForeignKey,
 )
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import Float
 
 # Create the base class for declarative models
 Base = declarative_base()
@@ -21,10 +21,13 @@ class Tickers(Base):
 
 # Define the ticker_data table
 class StockData(Base):
-    __tablename__ = "ticker_data"
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    ticker = Column(String(length=5), ForeignKey("tickers.ticker"))
-    date = Column(Date)
-    open_price = Column(Integer)
-    close_price = Column(Integer)
-    volume = Column(Integer)
+    __tablename__ = "stock_data"
+    id = Column(Integer, primary_key=True)
+    ticker = Column(String(5), nullable=False)
+    date = Column(Date, nullable=False)
+    open = Column(Float, nullable=False)
+    close = Column(Float, nullable=False)
+    high = Column(Float, nullable=False)
+    low = Column(Float, nullable=False)
+    dividend = Column(Float, nullable=False)
+    stock_splits = Column(Float, nullable=False)

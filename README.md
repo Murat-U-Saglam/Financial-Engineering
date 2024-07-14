@@ -26,3 +26,17 @@ Interactive Dashboards:
 Visualize historical stock data, trading signals, and strategy performance using interactive plots (e.g., candlestick charts, moving averages).
 Include backtesting results with metrics like Sharpe ratio, drawdowns, and cumulative returns.
 Allow users to adjust strategy parameters (e.g., lookback periods, thresholds) and see updated performance metrics in real-time.
+
+
+
+## Flow
+
+Frontend requires data for X analysis (backtrading/ BlackSholes of a stock etc) sends request to backend
+
+Backend accepts json which converts tto pydantic for validation.
+
+if not in db go to yf finance get data
+    
+save to db, 
+do backend process send response back to frontend.
+
