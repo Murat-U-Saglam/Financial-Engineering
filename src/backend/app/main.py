@@ -3,6 +3,7 @@ import os
 
 print(os.getcwd())
 from app.endpoints.router import router as data_router
+from app.models.schema_endpoint import router as schema_router
 
 app = FastAPI(
     title="Tools for finance",
@@ -23,4 +24,6 @@ async def ping():
     return {"ping": "a"}
 
 
-app.include_router(data_router, prefix="/data", tags=["data"])
+app.include_router(router=data_router, prefix="/data", tags=["data"])
+
+app.include_router(router=schema_router, prefix="/schema", tags=["schema"])

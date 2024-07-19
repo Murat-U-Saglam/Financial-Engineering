@@ -2,8 +2,12 @@ from typing import Optional
 from ORM.ticker import Tickers, StockData
 from models.db_models import TickersModel
 from data.database import get_session
-
+from data.inbound_data import get_stock_data_from_api
+import pandas as pd
+from sqlalchemy.exc import SQLAlchemyError
+from typing import Dict
 from sqlalchemy.exc import IntegrityError
+import datetime as dt
 
 
 def create_ticker(ticker_model: TickersModel) -> None:
@@ -55,9 +59,12 @@ def update_ticker(ticker_model: TickersModel) -> None:
     """
     with get_session() as session:
         ticker = session.query(Tickers).filter_by(ticker=ticker_model.ticker).first()
+
         if ticker:
-            ticker.date_from = ticker_model.date_from
-            ticker.date_to = ticker_model.date_to
+            if ticker_model.date_from is not None:
+                ticker.date_from = ticker_model.date_from
+            if ticker_model.date_to is not None:
+                ticker.date_to = ticker_model.date_to
             session.commit()
         else:
             create_ticker(ticker_model)
@@ -76,18 +83,13 @@ def delete_ticker(ticker_symbol: str) -> None:
             raise ValueError(f"No ticker found with the symbol {ticker_symbol}.")
 
 
-import pandas as pd
-from sqlalchemy.exc import SQLAlchemyError
-from src.backend.app.ORM.ticker import Tickers, get_session
-
-
-def create_tickers_from_dataframe(ticker : str, df: pd.DataFrame):
+def create_stock_data_from_dataframe(ticker: str, df: pd.DataFrame):
     try:
         with get_session() as session:
             for index, row in df.iterrows():
                 ticker = StockData(
                     date=index,
-                    ticker = ticker,
+                    ticker=ticker,
                     open_price=row["Open"],
                     high_price=row["High"],
                     low_price=row["Low"],
@@ -101,28 +103,55 @@ def create_tickers_from_dataframe(ticker : str, df: pd.DataFrame):
     except SQLAlchemyError as e:
         print(f"An error occurred: {e}")
 
-    
+
 def get_stock_data_by_ticker(ticker_symbol: str):
     with get_session() as session:
         stock_data = session.query(StockData).filter_by(ticker=ticker_symbol).all()
         return stock_data
 
-def update_stock_range(ticker_id, update_data: dict):
+
+def update_stock_data(
+    ticker_data_model: TickersModel, in_db: Tickers
+) -> Dict[str, Dict[str, dt.date | None]]:
     """
-    update_stock_range This gets metadata for a ticker and updates it in the database. with the new ranges of stock data.
-    #TODO Change the function to update the stock data in the database
+    update_ticker_data Changes the meta data in the database if the new data is outside the old data range. Should call update_stock_data if the data range is changed.
+    :rtype: Dict[str , Dict[str, dt.date | None]] {from: {old: dt.date, new: dt.date}, to: {old: dt.date, new: dt.date}}
     """
-    try:
-        with get_session() as session:
-            ticker = session.query(Tickers).filter(Tickers.id == ticker_id).first()
-            if ticker:
-                for key, value in update_data.items():
-                    setattr(ticker, key, value)
-                session.commit()
-            else:
-                print("Ticker not found")
-    except SQLAlchemyError as e:
-        print(f"An error occurred: {e}")
+    changes: Dict[str, Dict[str, dt.date | None]] = {}
+    with get_session() as session:
+        if in_db.date_from < ticker_data_model.date_from:
+            changes["from"]["old"], changes["from"]["new"] = (
+                in_db.date_from,
+                ticker_data_model.date_from,
+            )
+            data = get_stock_data_from_api(
+                ticker_data_to_get=TickersModel(
+                    ticker=ticker_data_model.ticker,
+                    date_from=ticker_data_model.date_from,
+                    date_to=in_db.date_from,
+                )
+            )
+            create_stock_data_from_dataframe(ticker=ticker_data_model.ticker, df=data)
+            in_db.date_from = ticker_data_model.date_from
+            session.add(in_db)
+            session.commit()
+        elif ticker_data_model.date_to > in_db.date_to:
+            changes["new"]["old"], changes["new"]["to"] = (
+                in_db.date_to,
+                ticker_data_model.date_to,
+            )
+            data = get_stock_data_from_api(
+                ticker_data_to_get=TickersModel(
+                    ticker=ticker_data_model.ticker,
+                    date_from=in_db.date_from,
+                    date_to=ticker_data_model.date_to,
+                )
+            )
+            create_stock_data_from_dataframe(ticker=ticker_data_model.ticker, df=data)
+            in_db.date_to = ticker_data_model.date_to
+            session.add(in_db)
+            session.commit()
+        return changes
 
 
 def delete_ticker(ticker_id: int):
