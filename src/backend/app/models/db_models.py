@@ -11,4 +11,4 @@ class TickersModel(BaseModel):
     date_to: dt.date = Field(default=dt.datetime.now().date())
 
     class Config:
-        orm_mode = True
+        from_attributes = True

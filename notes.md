@@ -14,9 +14,4 @@ Docker - ETL - DBs - Debugging containers
 
 
 ## TODO
-- create tables
-tickers
-ticker_data
-strip requirements from backend and front end
-Split frontend and backend use fast api for backend
-Change utils get rid of pydantic and Work with pandas dataframe and store the whole data
+- Validation on frontend and backend

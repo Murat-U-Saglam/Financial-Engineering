@@ -1,10 +1,11 @@
 from fastapi import APIRouter
 from app.models.backtest import BacktestModel
 from app.endpoints.behaviour import process_backtest
+from fastapi.responses import JSONResponse
 
 router = APIRouter()
 
 
-@router.get("/backtest", status_code=200)
+@router.post("/backtest", status_code=200)
 def get_backtest(backtest: BacktestModel):
-    return {"message": "backtest"}
+    return JSONResponse(content="Backtest Successful Bomba", status_code=200)
