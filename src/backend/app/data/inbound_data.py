@@ -1,6 +1,6 @@
 import yfinance as yf
 import pandas as pd
-from models.db_models import TickersModel
+from app.models.db_models import TickersModel
 
 
 def get_stock_data_from_api(ticker_data_to_get: TickersModel) -> pd.DataFrame:

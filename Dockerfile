@@ -29,5 +29,5 @@ ENV FRONTEND_DEBUGGING_PORT=${FRONTEND_DEBUGGING_PORT}
 
 EXPOSE ${FRONTEND_PORT} ${FRONTEND_DEBUGGING_PORT} 
 
-HEALTHCHECK CMD curl --fail http://localhost:6161/_stcore/health
+HEALTHCHECK CMD curl --fail http://localhost:${FRONTEND_PORT}/_stcore/health
 

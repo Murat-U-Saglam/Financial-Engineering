@@ -1,9 +1,6 @@
 from pydantic import BaseModel, Field
-from typing import List, Optional
-from datetime import datetime
 from app.models.db_models import TickersModel
 from enum import Enum
-from pydantic import BaseModel
 
 
 class RiskLevel(Enum):
@@ -41,7 +38,32 @@ class Strategy(BaseModel):
 
 
 class BacktestModel(BaseModel):
+    initial_investment: float = Field(
+        default=None,
+        ge=1,
+        description="Initial Balance",
+    )  ## If not included it just blanks
     ticker_data: TickersModel
     risk_profile: RiskProfileModel
     strategies: Strategy
     ta_indicators: TAIndicator
+
+    class Config:
+        from_attributes = True
+        extra = "forbid"
+        title = "Backtest Model"
+        description = "Backtest Model"
+        json_schema_extra = {
+            "example": {
+                "model_config": {"extra": "forbid"},
+                "initial_investment": 100.0,
+                "ticker_data": {
+                    "ticker": "AAPL",
+                    "date_from": "2021-01-01",
+                    "date_to": "2021-12-31",
+                },
+                "risk_profile": {"risk_level": "medium"},
+                "strategies": {"strategy": "greedy"},
+                "ta_indicators": {"moving_average": 30, "rsi": 14},
+            }
+        }

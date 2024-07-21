@@ -1,30 +1,116 @@
-from ORM.ticker import StockData, Tickers
-from models.db_models import StockDataModel, TickersModel
-from data.database import get_session
+from typing import Optional
+from app.ORM.ticker import Tickers, StockData
+from app.models.db_models import TickersModel
+from app.data.database import get_session
+from app.data.inbound_data import get_stock_data_from_api
+import pandas as pd
+from sqlalchemy.exc import SQLAlchemyError
 from typing import Dict
 import datetime as dt
-from data.inbound_data import get_stock_data_from_api
 
 
-def write_meta_data_to_db(meta_data_model: TickersModel) -> None:
+def stock_data(ticker_data: TickersModel):
     """
-    write_meta_data_to_db writes the meta data to the database, checks if the data range is already in the database and updates it if necessary.
+    stock_data is a function that is used to get stock data from the Yahoo Finance API and store it in the database.
+    :param ticker_data: TickersModel
+    :return: None
     """
-    with get_session() as session:
-        in_db = get_ticker_data(meta_data_model)
-        if not in_db:
+    try:
+        with get_session() as session:
             ticker = Tickers(
-                ticker=meta_data_model.ticker,
-                date_from=meta_data_model.date_from,
-                date_to=meta_data_model.date_to,
+                ticker=ticker_data.ticker,
+                date_from=ticker_data.date_from,
+                date_to=ticker_data.date_to,
             )
             session.add(ticker)
             session.commit()
+            data = get_stock_data_from_api(ticker_data)
+            create_stock_data_from_dataframe(ticker=ticker_data.ticker, df=data)
+    except SQLAlchemyError as e:
+        print(f"An error occurred: {e}")
+
+
+def create_ticker(ticker_model: TickersModel) -> None:
+    """
+    Create a new Ticker entry in the database.
+    Checks if the ticker already exists to avoid duplicate primary key entries.
+    """
+    in_db = read_ticker(ticker_model.ticker)
+    if in_db is None:
+        data = get_stock_data_from_api(ticker_model)
+
+    pass
+
+
+def read_ticker(ticker_symbol: str) -> Optional[Tickers]:
+    """
+    Read a Ticker entry from the database by ticker symbol.
+    Returns the Ticker object if found, else None.
+    """
+    with get_session() as session:
+        ticker = session.query(Tickers).filter_by(ticker=ticker_symbol).first()
+        return ticker
+    ## TODO do checks for ranges of date and update accordingly
+
+
+def update_ticker(ticker_model: TickersModel) -> None:
+    """
+    Update an existing Ticker entry in the database.
+    """
+    with get_session() as session:
+        ticker = session.query(Tickers).filter_by(ticker=ticker_model.ticker).first()
+
+        if ticker:
+            if ticker_model.date_from is not None:
+                ticker.date_from = ticker_model.date_from
+            if ticker_model.date_to is not None:
+                ticker.date_to = ticker_model.date_to
+            session.commit()
         else:
-            update_ticker_data(ticker_data_model=meta_data_model, in_db=in_db)
+            create_ticker(ticker_model)
 
 
-def update_ticker_data(
+def delete_ticker(ticker_symbol: str) -> None:
+    """
+    Delete a Ticker entry from the database by ticker symbol.
+    """
+    with get_session() as session:
+        ticker = session.query(Tickers).filter_by(ticker=ticker_symbol).first()
+        if ticker:
+            session.delete(ticker)
+            session.commit()
+        else:
+            raise ValueError(f"No ticker found with the symbol {ticker_symbol}.")
+
+
+def create_stock_data_from_dataframe(ticker: str, df: pd.DataFrame):
+    try:
+        with get_session() as session:
+            for index, row in df.iterrows():
+                ticker = StockData(
+                    date=index,
+                    ticker=ticker,
+                    open_price=row["Open"],
+                    high_price=row["High"],
+                    low_price=row["Low"],
+                    close_price=row["Close"],
+                    volume=row["Volume"],
+                    dividends=row["Dividends"],
+                    stock_splits=row["Stock Splits"],
+                )
+                session.add(ticker)
+            session.commit()
+    except SQLAlchemyError as e:
+        print(f"An error occurred: {e}")
+
+
+def get_stock_data_by_ticker(ticker_symbol: str):
+    with get_session() as session:
+        stock_data = session.query(StockData).filter_by(ticker=ticker_symbol).all()
+        return stock_data
+
+
+def update_stock_data(
     ticker_data_model: TickersModel, in_db: Tickers
 ) -> Dict[str, Dict[str, dt.date | None]]:
     """
@@ -38,123 +124,44 @@ def update_ticker_data(
                 in_db.date_from,
                 ticker_data_model.date_from,
             )
+            data = get_stock_data_from_api(
+                ticker_data_to_get=TickersModel(
+                    ticker=ticker_data_model.ticker,
+                    date_from=ticker_data_model.date_from,
+                    date_to=in_db.date_from,
+                )
+            )
+            create_stock_data_from_dataframe(ticker=ticker_data_model.ticker, df=data)
             in_db.date_from = ticker_data_model.date_from
+            session.add(in_db)
             session.commit()
-        elif in_db.date_to > ticker_data_model.date_to:
+        elif ticker_data_model.date_to > in_db.date_to:
             changes["new"]["old"], changes["new"]["to"] = (
                 in_db.date_to,
                 ticker_data_model.date_to,
             )
+            data = get_stock_data_from_api(
+                ticker_data_to_get=TickersModel(
+                    ticker=ticker_data_model.ticker,
+                    date_from=in_db.date_from,
+                    date_to=ticker_data_model.date_to,
+                )
+            )
+            create_stock_data_from_dataframe(ticker=ticker_data_model.ticker, df=data)
             in_db.date_to = ticker_data_model.date_to
+            session.add(in_db)
             session.commit()
         return changes
 
 
-def get_ticker_data(get_ticker_data: TickersModel) -> bool | Tickers:
-    """
-    get_meta_data: returns the meta data if it is already in the database. If it is not in the database it returns False.
-    """
-    with get_session() as session:
-        query = session.query(Tickers).filter_by(ticker=get_ticker_data.ticker)
-        if query.first():
-            return query.first()
-        else:
-            return False
-
-
-def delete_ticker_data(ticker_data: TickersModel) -> None:
-    """
-    delete_ticker_data deletes the meta data from the database.
-    """
-    with get_session() as session:
-        query = session.query(Tickers).filter_by(ticker=ticker_data.ticker)
-        if query.first():
-            query.delete()
-            session.commit()
-        else:
-            return False
-
-
-def get_stock_data(stock_data: StockDataModel) -> bool | StockData:
-    """
-    get_stock_data returns the stock data from the database.
-    """
-    with get_session() as session:
-        query = session.query(StockData).filter_by(ticker=stock_data.ticker)
-        if query.first():
-            return query.first()
-        else:
-            return False
-
-
-def create_stock_data(stock_data: StockDataModel) -> None:
-    """
-    create_stock_data writes the stock data to the database.
-    Always check data bounds with TickerData before writing stock data.
-    """
-    with get_session() as session:
-        in_db = get_stock_data(stock_data)
-        if not in_db:
-            stock_data = StockData(
-                ticker=stock_data.ticker,
-                date=stock_data.date,
-                open_price=stock_data.open_price,
-                close_price=stock_data.close_price,
-                volume=stock_data.volume,
-            )
-            session.add(stock_data)
-            session.commit()
-
-
-def delete_all_stock_data(stock_data: StockDataModel) -> None:
-    """
-    delete_stock_data deletes the stock data from the database.
-    """
-    with get_session() as session:
-        query = session.query(StockData).filter_by(ticker=stock_data.ticker)
-        if query.first():
-            query.delete()
-            session.commit()
-        else:
-            return None
-
-
-def update_stock_data(
-    ticker: str, changes: Dict[str, Dict[str, dt.date | None]]
-) -> None:
-    """
-    update_stock_data: Updates the stock data in the database if the meta data has changed.
-
-    :param ticker: _description_
-    :type ticker: str
-    :param changes: _description_
-    :type changes: Dict[str , Dict[str, dt.date  |  None]]
-    """
-    assert changes != {}, "No changes to update"
-    for k, v in changes.items():
-        if v["old"] != {}:
-            data = get_stock_data_from_api(
-                TickersModel(ticker=ticker, date_from=v["new"], date_to=v["old"])
-            )  ## This is because the new from date will be older than the old from date
-            create_stock_data(
-                StockDataModel(
-                    ticker=ticker,
-                    date=data.index,
-                    open_price=data["Open"],
-                    close_price=data["Close"],
-                    volume=data["Volume"],
-                )
-            )
-        elif v["new"] != {}:
-            data = get_stock_data_from_api(
-                TickersModel(ticker=ticker, date_from=v["old"], date_to=v["new"])
-            )  ## This is because the new from date will be older than the old from date
-            create_stock_data(
-                StockDataModel(
-                    ticker=ticker,
-                    date=data.index,
-                    open_price=data["Open"],
-                    close_price=data["Close"],
-                    volume=data["Volume"],
-                )
-            )
+def delete_stock(ticker_id: int):
+    try:
+        with get_session() as session:
+            ticker = session.query(Tickers).filter(Tickers.id == ticker_id).first()
+            if ticker:
+                session.delete(ticker)
+                session.commit()
+            else:
+                print("Ticker not found")
+    except SQLAlchemyError as e:
+        print(f"An error occurred: {e}")

@@ -8,7 +8,6 @@ def read_markdown_file(file_path: Path) -> str:
     return file_path.read_text()
 
 
-
 st.title("Financial Engineering App")
 
 

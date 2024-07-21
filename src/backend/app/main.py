@@ -1,9 +1,6 @@
 from fastapi import FastAPI
-import os
-
-print(os.getcwd())
 from app.endpoints.router import router as data_router
-from app.models.schema_endpoint import router as schema_router
+from app.endpoints.schema_endpoint import router as schema_router
 
 app = FastAPI(
     title="Tools for finance",
