@@ -31,15 +31,20 @@ services:
     environment:
       - BACKEND_PORT=${BACKEND_PORT}
       - BACKEND_DEBUGGING_PORT=${BACKEND_DEBUGGING_PORT}
+      - MYSQL_HOST=${MYSQL_HOST}
+      - MYSQL_PORT=${MYSQL_PORT}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}      
     command: uvicorn app.main:app --reload --workers 1 --host 0.0.0.0 --port ${BACKEND_PORT}
     ports:
       - "${BACKEND_PORT}:${BACKEND_PORT}"
     volumes:
       - ./src/backend:/backend
     depends_on:
-      - database
+      - db
 
-  database:
+  db:
     image: mysql:9.0.0
     container_name: ${MYSQL_CONTAINER_NAME}
     environment:
@@ -47,6 +52,7 @@ services:
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_HOST: ${MYSQL_HOST}
     ports:
       - "${MYSQL_PORT}:${MYSQL_PORT}"
     volumes:

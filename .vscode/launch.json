@@ -2,17 +2,32 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Python: Debug Streamlit within container",
-      "type": "debugpy",
+      "name": "Python: Debug Streamlit within container (Frontend)",
+      "type": "python",
       "request": "attach",
       "connect": {
         "host": "localhost",
-        "port": "${env:FRONTEND_DEBUGGING_PORT}"
+        "port": 5678 // Replace 5678 with your actual FRONTEND_DEBUGGING_PORT
       },
       "pathMappings": [
         {
-          "localRoot": "${workspaceFolder}",
-          "remoteRoot": "/src"
+          "localRoot": "${workspaceFolder}/src/frontend",
+          "remoteRoot": "/frontend"
+        }
+      ]
+    },
+    {
+      "name": "Python: Debug FastAPI within container (Backend)",
+      "type": "python",
+      "request": "attach",
+      "connect": {
+        "host": "localhost",
+        "port": 5679 // Replace 5679 with your actual BACKEND_DEBUGGING_PORT
+      },
+      "pathMappings": [
+        {
+          "localRoot": "${workspaceFolder}/src/backend",
+          "remoteRoot": "/backend"
         }
       ]
     }

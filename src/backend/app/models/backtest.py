@@ -1,6 +1,9 @@
 from pydantic import BaseModel, Field
 from app.models.db_models import TickersModel
 from enum import Enum
+from contextlib import contextmanager
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy import create_engine
 
 
 class RiskLevel(Enum):
@@ -55,7 +58,6 @@ class BacktestModel(BaseModel):
         description = "Backtest Model"
         json_schema_extra = {
             "example": {
-                "model_config": {"extra": "forbid"},
                 "initial_investment": 100.0,
                 "ticker_data": {
                     "ticker": "AAPL",

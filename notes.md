@@ -12,6 +12,3 @@ Clean coding
 # Upskilling
 Docker - ETL - DBs - Debugging containers
 
-
-## TODO
-- Validation on frontend and backend
