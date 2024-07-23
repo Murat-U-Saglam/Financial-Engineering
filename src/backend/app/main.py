@@ -5,9 +5,6 @@ from app.data.database import create_tables
 from contextlib import asynccontextmanager
 
 
-
-
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     try:
@@ -15,13 +12,17 @@ async def lifespan(app: FastAPI):
         yield
     finally:
         pass
+
+
 app = FastAPI(
     title="Tools for finance",
     version="0.1",
     description="Tools to develop my ETL process for finance data",
     docs_url="/",
-    redoc_url="/redoc",lifespan=lifespan
+    redoc_url="/redoc",
+    lifespan=lifespan,
 )
+
 
 @app.get("/")
 async def root():

@@ -15,11 +15,12 @@ services:
       - DEBUG=True # Optional: Set an environment variable to indicate debugging mode
     command: >
       bash -c "pip install debugpy && 
-               python -m debugpy --wait-for-client --listen 0.0.0.0:${FRONTEND_DEBUGGING_PORT} -m streamlit run app/0_👋_Introduction.py --server.port=${FRONTEND_DEBUGGING_PORT} --server.address=0.0.0.0 --server.runOnSave=True"
+               python -m debugpy --wait-for-client --listen 0.0.0.0:${FRONTEND_DEBUGGING_PORT} -m streamlit run app/0_👋_Introduction.py --server.port=${FRONTEND_PORT} --server.address=0.0.0.0 --server.runOnSave=True"
     volumes:
       - ./src/frontend:/frontend
     ports:
       - "${FRONTEND_DEBUGGING_PORT}:${FRONTEND_DEBUGGING_PORT}"
+      - "${FRONTEND_PORT}:${FRONTEND_PORT}"
     depends_on:
       - backend
   
@@ -41,9 +42,10 @@ services:
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}    
       - PYTHONUNBUFFERED=1
       - DEBUG=True 
-    command: ["sh", "-c", "pip install debugpy -t /tmp && python /tmp/debugpy --wait-for-client --listen 0.0.0.0:${BACKEND_DEBUGGING_PORT} -m uvicorn app.main:app  --host 0.0.0.0 --port ${BACKEND_DEBUGGING_PORT} --reload"]
+    command: ["sh", "-c", "pip install debugpy -t /tmp && python /tmp/debugpy --wait-for-client --listen 0.0.0.0:${BACKEND_DEBUGGING_PORT} -m uvicorn app.main:app  --host 0.0.0.0 --port ${BACKEND_PORT} --reload"]
     ports:
       - "${BACKEND_DEBUGGING_PORT}:${BACKEND_DEBUGGING_PORT}"
+      - "${BACKEND_PORT}:${BACKEND_PORT}"
     volumes:
       - ./src/backend:/backend
     depends_on:

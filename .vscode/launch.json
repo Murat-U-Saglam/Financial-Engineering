@@ -3,11 +3,11 @@
   "configurations": [
     {
       "name": "Python: Debug Streamlit within container (Frontend)",
-      "type": "python",
+      "type": "debugpy",
       "request": "attach",
       "connect": {
         "host": "localhost",
-        "port": 5678 // Replace 5678 with your actual FRONTEND_DEBUGGING_PORT
+        "port": 1112 // Replace 5678 with your actual FRONTEND_DEBUGGING_PORT
       },
       "pathMappings": [
         {
@@ -18,11 +18,11 @@
     },
     {
       "name": "Python: Debug FastAPI within container (Backend)",
-      "type": "python",
+      "type": "debugpy",
       "request": "attach",
       "connect": {
         "host": "localhost",
-        "port": 5679 // Replace 5679 with your actual BACKEND_DEBUGGING_PORT
+        "port": 1111 // Replace 5679 with your actual BACKEND_DEBUGGING_PORT
       },
       "pathMappings": [
         {

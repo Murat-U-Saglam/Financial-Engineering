@@ -32,4 +32,3 @@ class StockData(Base):
     low_price = Column(Float, nullable=False)
     dividends = Column(Float, nullable=False)
     stock_splits = Column(Float, nullable=False)
-
