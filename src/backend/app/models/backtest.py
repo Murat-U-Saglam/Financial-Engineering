@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from app.models.db_models import TickersModel
+from app.models.models import Tickers
 from enum import Enum
 from contextlib import contextmanager
 from sqlalchemy.orm import sessionmaker
@@ -46,7 +46,7 @@ class BacktestModel(BaseModel):
         ge=1,
         description="Initial Balance",
     )  ## If not included it just blanks
-    ticker_data: TickersModel
+    ticker_data: Tickers
     risk_profile: RiskProfileModel
     strategies: Strategy
     ta_indicators: TAIndicator

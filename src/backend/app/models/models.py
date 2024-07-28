@@ -2,9 +2,24 @@ from pydantic import BaseModel, Field, validator
 import datetime as dt
 from dateutil.relativedelta import relativedelta
 from fastapi import HTTPException
+from sqlmodel import SQLModel, Field, Column, Integer, String, DateTime
 
 
-class TickersModel(BaseModel):
+class StockData(SQLModel, table=True):
+    __tablename__ = "stock_data"
+    id: int = Field(default=None, primary_key=True)
+    ticker: str = Field(default=None, max_length=5)
+    date: dt.date = Field(default=None)
+    open: float = Field(default=None)
+    high: float = Field(default=None)
+    low: float = Field(default=None)
+    close: float = Field(default=None)
+    adj_close: float = Field(default=None)
+    volume: int = Field(default=None)
+
+
+class Tickers(SQLModel, table=True):
+    id: int = Field(default=None, primary_key=True)
     ticker: str = Field(default="APPL", max_length=5)
     date_to: dt.date = Field(default=dt.datetime.now().date())
     date_from: dt.date = Field(

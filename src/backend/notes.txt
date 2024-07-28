@@ -1,0 +1,10 @@
+mysql -u your_user -p your_database
+SHOW TABLES;
+
+DELETE FROM tickers
+WHERE ticker = 'AAPL';
+
+
+select * from tickers;
+
+select * from stock_data;

@@ -1,14 +1,15 @@
-from app.models import db_models, backtest
+from app.models import backtest
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
+from app.models import models
 
 
 router = APIRouter()
 
 
-@router.get("/ticker", status_code=200, response_model=db_models.TickersModel)
-def ticker_model() -> db_models.TickersModel:
-    schema = db_models.TickersModel.schema()
+@router.get("/ticker", status_code=200, response_model=models.Tickers)
+def ticker_model() -> models.Tickers:
+    schema = models.Tickers.schema()
     return JSONResponse(content=schema, status_code=200)
 
 

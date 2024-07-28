@@ -1,14 +1,14 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from app.endpoints.router import router as data_router
 from app.endpoints.schema_endpoint import router as schema_router
-from app.data.database import create_tables
+from app.data.database import create_db_and_tables, get_session
 from contextlib import asynccontextmanager
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     try:
-        create_tables()
+        await create_db_and_tables()
         yield
     finally:
         pass
@@ -34,6 +34,16 @@ async def ping():
     return {"ping": "a"}
 
 
-app.include_router(router=data_router, prefix="/data", tags=["data"])
+app.include_router(
+    router=data_router,
+    prefix="/data",
+    tags=["data"],
+    dependencies=[Depends(dependency=get_session)],
+)
 
-app.include_router(router=schema_router, prefix="/schema", tags=["schema"])
+app.include_router(
+    router=schema_router,
+    prefix="/schema",
+    tags=["schema"],
+    dependencies=[Depends(dependency=get_session)],
+)

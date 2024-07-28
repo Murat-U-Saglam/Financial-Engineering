@@ -1,9 +1,9 @@
 import yfinance as yf
 import pandas as pd
-from app.models.db_models import TickersModel
+from app.models.models import Tickers
 
 
-def get_stock_data_from_api(ticker_data_to_get: TickersModel) -> pd.DataFrame:
+async def get_stock_data_from_api(ticker_data_to_get: Tickers) -> pd.DataFrame:
     """All stock data is retrieved from Yahoo Finance API  with a 1 hr interval"""
     stock_data = yf.Ticker(ticker_data_to_get.ticker)
     history = stock_data.history(
