@@ -1,9 +1,11 @@
-from pydantic import BaseModel, Field
-from app.models.models import Tickers
+from pydantic import BaseModel, Field, field_validator, PastDate
 from enum import Enum
 from contextlib import contextmanager
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine
+import datetime as dt
+from fastapi import HTTPException
+from dateutil.relativedelta import relativedelta
 
 
 class RiskLevel(Enum):
@@ -27,6 +29,22 @@ class TAIndicator(BaseModel):
         le=50,
         description="Relative Strength Index - Moving Average length",
     )
+
+
+class Tickers(BaseModel):
+    ticker: str = Field(default="AAPL", max_length=5)
+    date_to: PastDate = Field(default=dt.datetime.now().date())
+    date_from: PastDate = Field(
+        default=(dt.datetime.now() + relativedelta(years=-1)).date()
+    )
+
+    @field_validator("date_from")
+    def validate_date_from(cls, value, values):
+        if value >= values.data["date_to"]:
+            raise HTTPException(
+                status_code=400, detail="date_from must be smaller than date_to"
+            )
+        return value
 
 
 class StrategyLevel(Enum):

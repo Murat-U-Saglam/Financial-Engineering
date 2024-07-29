@@ -1,8 +1,8 @@
-from pydantic import BaseModel, Field, validator
+from pydantic import field_validator, ConfigDict
 import datetime as dt
 from dateutil.relativedelta import relativedelta
 from fastapi import HTTPException
-from sqlmodel import SQLModel, Field, Column, Integer, String, DateTime
+from sqlmodel import SQLModel, Field
 
 
 class StockData(SQLModel, table=True):
@@ -26,7 +26,7 @@ class Tickers(SQLModel, table=True):
         default=(dt.datetime.now() + relativedelta(years=-1)).date()
     )
 
-    @validator("date_from")
+    @field_validator("date_from")
     def validate_date_range(cls, value, values):
         date_to = values.get("date_to")
         if date_to and value > date_to:
@@ -36,7 +36,7 @@ class Tickers(SQLModel, table=True):
             )
         return value
 
-    @validator("date_to")
+    @field_validator("date_to")
     def validate_date_to(cls, value, values):
         if value >= dt.datetime.now().date() + relativedelta(days=1):
             raise HTTPException(
@@ -45,4 +45,4 @@ class Tickers(SQLModel, table=True):
         return value
 
     class Config:
-        from_attributes = True
+        arbitrary_types_allowed = True
