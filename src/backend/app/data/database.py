@@ -34,4 +34,4 @@ async def get_session() -> AsyncSession:
             session.rollback()
             raise e
         finally:
-            session.close()
+            await session.close()

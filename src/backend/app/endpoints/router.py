@@ -17,4 +17,4 @@ async def get_backtest(
     logger.info(msg=f"Received backtest request for {backtest}")
     df = await process_backtest(backtest=backtest, session=session)
     logger.error(df)
-    return JSONResponse(content=df.dict(), status_code=200)
+    return JSONResponse(content=df.to_json(), status_code=200)

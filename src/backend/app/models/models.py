@@ -7,20 +7,22 @@ from sqlmodel import SQLModel, Field
 
 class StockData(SQLModel, table=True):
     __tablename__ = "stock_data"
-    id: int = Field(default=None, primary_key=True)
+    index: int | None = Field(default=None, primary_key=True)
     ticker: str = Field(default=None, max_length=5)
     date: dt.date = Field(default=None)
     open: float = Field(default=None)
     high: float = Field(default=None)
     low: float = Field(default=None)
     close: float = Field(default=None)
-    adj_close: float = Field(default=None)
     volume: int = Field(default=None)
 
 
 class Tickers(SQLModel, table=True):
     id: int = Field(default=None, primary_key=True)
-    ticker: str = Field(default="APPL", max_length=5)
+    ticker: str = Field(
+        default="APPL",
+        max_length=5,
+    )
     date_to: dt.date = Field(default=dt.datetime.now().date())
     date_from: dt.date = Field(
         default=(dt.datetime.now() + relativedelta(years=-1)).date()

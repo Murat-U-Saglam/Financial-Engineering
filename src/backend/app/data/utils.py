@@ -156,19 +156,14 @@ async def get_stock_data_by_ticker(
     ticker = ticker_model.ticker
     date_from = ticker_model.date_from
     date_to = ticker_model.date_to
-    ## FIX THIS
-    statement = (
-        select(StockData)
-        .join(Tickers)
-        .where(
-            Tickers.ticker == ticker,
-            StockData.date >= date_from,
-            StockData.date <= date_to,
-        )
+    statement = select(StockData).where(
+        StockData.ticker == ticker
+        and StockData.date >= date_from
+        and StockData.date <= date_to
     )
     result = await session.execute(statement)
-    session_data = result.scalars().all()
-    return pd.DataFrame([data.__dict__ for data in session_data])
+    df = pd.DataFrame(result.scalars().all())
+    return df
 
 
 async def check_if_update_is_required(

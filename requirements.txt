@@ -56,7 +56,7 @@ mdurl==0.1.2
 multitasking==0.0.11
 mysql-connector-python==9.0.0
 nest-asyncio==1.6.0
-numpy==2.0.0
+numpy==1.26.4
 orjson==3.10.6
 packaging==24.1
 pandas==2.2.2
