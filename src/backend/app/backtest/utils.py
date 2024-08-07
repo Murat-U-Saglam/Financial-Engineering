@@ -1,14 +1,13 @@
 from typing import Optional
-from app.models.models import Tickers, StockData
+from app.models.models import Tickers
 from app.data.database import get_session
 from sqlmodel.ext.asyncio.session import AsyncSession
 from app.data.inbound_data import get_stock_data_from_api
 import pandas as pd
 from typing import Dict
 from sqlmodel import Session, select
-import datetime as dt
-from fastapi import Depends, HTTPException, status
-from . import logger
+from fastapi import HTTPException, status
+from ..data import logger
 
 
 async def stock_data(ticker_data: Tickers, session: AsyncSession = get_session) -> None:
@@ -25,7 +24,7 @@ async def stock_data(ticker_data: Tickers, session: AsyncSession = get_session) 
     session.add(ticker)
     session.commit()
     data = get_stock_data_from_api(ticker_data)
-    create_stock_data_from_dataframe(ticker=ticker_data.ticker, df=data)
+    await create_stock_data_from_dataframe(ticker=ticker_data.ticker, df=data, session=session)
 
 
 async def create_ticker(
@@ -61,7 +60,7 @@ async def create_ticker_and_stock(
     elif await check_ticker_ranges(
         ticker_model=ticker_model, in_db=in_db, session=session
     ):
-        await update_stock_data(tickers_model=ticker_model, in_db=in_db)
+        await update_stock_data(tickers_model=ticker_model, in_db=in_db, session=session)
 
 
 async def check_ticker_ranges(
@@ -113,12 +112,12 @@ async def update_ticker(
     """
     Update an existing Ticker entry in the database.
     """
-    ticker = await session.query(Tickers).filter_by(ticker=ticker_model.ticker).first()
+    #ticker = await session.execute(select(Tickers).filter_by(ticker=ticker_model.ticker).first()
+    ticker = await read_ticker(ticker_symbol=ticker_model.ticker, session=session)
     if not ticker:
         raise ValueError(f"No ticker found with the symbol {ticker_model.ticker}.")
     ticker.date_from = ticker_model.date_from
     ticker.date_to = ticker_model.date_to
-    session.commit()
 
 
 async def delete_ticker(
@@ -150,64 +149,35 @@ async def create_stock_data_from_dataframe(
     await session.run_sync(df_to_db, df)  ## Needs to be done non Async
 
 
-async def get_stock_data_by_ticker(
-    ticker_model: Tickers, session: AsyncSession = get_session
-) -> pd.DataFrame:
-    ticker = ticker_model.ticker
-    date_from = ticker_model.date_from
-    date_to = ticker_model.date_to
-    statement = select(StockData).where(
-        StockData.ticker == ticker
-        and StockData.date >= date_from
-        and StockData.date <= date_to
+def get_stock_data_by_ticker(session: Session, ticker_model: Tickers) -> pd.DataFrame:
+    conn = session.connection()
+    df = pd.read_sql(
+        f"SELECT * FROM stock_data WHERE Ticker = '{ticker_model.ticker}' AND Date >= '{ticker_model.date_from}' AND Date <= '{ticker_model.date_to}'",
+        con=conn,
     )
-    result = await session.execute(statement)
-    df = pd.DataFrame(result.scalars().all())
     return df
 
 
-async def check_if_update_is_required(
-    tickers_model: Tickers, in_db: Tickers
-) -> Dict[str, bool] | None:
-    changes: Dict[str, bool] = {"date_from": False, "date_to": False}
-    if tickers_model.date_from < in_db.date_from:
-        changes["date_from"] = True
-    if tickers_model.date_to > in_db.date_to:
-        changes["date_to"] = True
-    if in_db.date_from is None:
-        changes["date_from"] = True
-    if in_db.date_to is None:
-        changes["date_to"] = True
-    if not any(changes.values()):
-        return None
-    return changes
 
 
 async def update_stock_data(
     tickers_model: Tickers, in_db: Tickers, session: AsyncSession = get_session
 ) -> None:
-    changes = check_if_update_is_required(tickers_model, in_db)
-    if not changes:
-        return None
-    if changes.get("date_from"):
-        df = get_stock_data_from_api(
-            ticker_data_to_get=Tickers(
-                ticker=tickers_model.ticker,
-                date_from=tickers_model.date_from,
-                date_to=in_db.date_from,
-            )
-        )
-        create_stock_data_from_dataframe(ticker=tickers_model.ticker, df=df)
-    if changes.get("date_to"):
-        df = get_stock_data_from_api(
-            ticker_data_to_get=Tickers(
-                ticker=tickers_model.ticker,
-                date_from=in_db.date_to,
-                date_to=tickers_model.date_to,
-            )
-        )
-        create_stock_data_from_dataframe(ticker=tickers_model.ticker, df=df)
-    update_ticker(tickers_model)
+    if in_db.date_from is None or tickers_model.date_from < in_db.date_from:
+        new_date_from = tickers_model.date_from
+    else:
+        new_date_from = in_db.date_from
+    if in_db.date_to is None or tickers_model.date_to > in_db.date_to:
+        new_date_to = tickers_model.date_to
+    else:
+        new_date_to = in_db.date_to
+    tmp_ticker_model = Tickers(
+        ticker=in_db.ticker, date_from=new_date_from, date_to=new_date_to
+    )
+    df = await get_stock_data_from_api(ticker_data_to_get=tmp_ticker_model)
+    await create_stock_data_from_dataframe(ticker=in_db.ticker, df=df, session=session)
+    await update_ticker(ticker_model=tmp_ticker_model, session=session)
+
 
 
 async def delete_stock(

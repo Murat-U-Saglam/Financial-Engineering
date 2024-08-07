@@ -1,5 +1,5 @@
 # pull official base image
-FROM python:3.12-slim-bullseye
+FROM python:3.10.4-slim-bullseye
 
 # set work directory
 WORKDIR /backend
@@ -11,8 +11,6 @@ ARG MYSQL_PORT
 ARG MYSQL_USER 
 ARG MYSQL_PASSWORD 
 ARG MYSQL_DATABASE
-
-
 
 EXPOSE ${BACKEND_PORT} ${BACKEND_DEBUGGING_PORT}
 
@@ -27,6 +25,14 @@ ENV MYSQL_USER ${MYSQL_USER}
 ENV MYSQL_PASSWORD ${MYSQL_PASSWORD}
 ENV MYSQL_DATABASE ${MYSQL_DATABASE}
 
+
+
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    curl \
+    software-properties-common \
+    git
+    
 # Upgrade pip 
 RUN python -m pip install --upgrade pip
 

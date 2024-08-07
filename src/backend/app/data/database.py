@@ -1,10 +1,7 @@
 from app.data.config import Config
-from typing import Generator
-
 from app.models.models import SQLModel
 from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlalchemy.ext.asyncio import (
-    create_async_engine,
     AsyncSession,
     create_async_engine,
     async_sessionmaker,
@@ -30,8 +27,9 @@ async def get_session() -> AsyncSession:
     async with SessionLocal() as session:
         try:
             yield session
+            await session.commit()
         except Exception as e:
-            session.rollback()
+            await session.rollback()
             raise e
         finally:
             await session.close()

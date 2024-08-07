@@ -1,8 +1,12 @@
 from fastapi import FastAPI, Depends
-from app.endpoints.router import router as data_router
-from app.endpoints.schema_endpoint import router as schema_router
+from app.backtest.router import router as data_router
+from app.backtest.schema_endpoint import router as schema_router
 from app.data.database import create_db_and_tables, get_session
 from contextlib import asynccontextmanager
+import logging.config
+
+
+logging.config.fileConfig("app/logging.conf")
 
 
 @asynccontextmanager

@@ -1,5 +1,4 @@
 {
-  "version": "0.2.0",
   "configurations": [
     {
       "name": "Python: Debug Streamlit within container (Frontend)",
@@ -7,7 +6,7 @@
       "request": "attach",
       "connect": {
         "host": "localhost",
-        "port": 1112 // Replace 5678 with your actual FRONTEND_DEBUGGING_PORT
+        "port": 1112 // Replace 1112 with your actual FRONTEND_DEBUGGING_PORT
       },
       "pathMappings": [
         {
@@ -22,14 +21,14 @@
       "request": "attach",
       "connect": {
         "host": "localhost",
-        "port": 1111 // Replace 5679 with your actual BACKEND_DEBUGGING_PORT
+        "port": 1111 // Replace 1111 with your actual BACKEND_DEBUGGING_PORT
       },
       "pathMappings": [
         {
           "localRoot": "${workspaceFolder}/src/backend",
           "remoteRoot": "/backend"
         }
-      ]
+      ],
     }
   ]
 }

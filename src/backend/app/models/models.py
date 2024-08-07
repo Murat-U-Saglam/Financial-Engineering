@@ -1,4 +1,4 @@
-from pydantic import field_validator, ConfigDict
+from pydantic import field_validator
 import datetime as dt
 from dateutil.relativedelta import relativedelta
 from fastapi import HTTPException

@@ -1,5 +1,5 @@
 # pull official base image
-FROM python:3.12-slim-bullseye
+FROM python:3.10-slim-bullseye
 
 # set work directory 
 WORKDIR /frontend
