@@ -1,50 +1,39 @@
 from typing import Optional
-from app.models.models import Tickers
-from app.data.database import get_session
+from app.models.SQLModel import Tickers
+from app.db.database import get_session
 from sqlmodel.ext.asyncio.session import AsyncSession
-from app.data.inbound_data import get_stock_data_from_api
+from app.db.inbound_data import get_stock_data_from_api
 import pandas as pd
 from typing import Dict
 from sqlmodel import Session, select
-from fastapi import HTTPException, status
-from ..data import logger
+from fastapi import HTTPException, status, Depends
+from . import logger
 
 
-async def stock_data(ticker_data: Tickers, session: AsyncSession = get_session) -> None:
+async def stock_data(ticker_data: Tickers, session: AsyncSession = Depends(dependency=get_session)) -> None:
     """
     stock_data is a function that is used to get stock data from the Yahoo Finance API and store it in the database.
     :param ticker_data: Tickers
     :return: None
     """
-    ticker = Tickers(
-        ticker=ticker_data.ticker,
-        date_from=ticker_data.date_from,
-        date_to=ticker_data.date_to,
+    await session.add(ticker_data)
+    await session.commit()
+    data = await get_stock_data_from_api(ticker_data_to_get=ticker_data)
+    await create_stock_data_from_dataframe(
+        ticker=ticker_data.ticker, df=data, session=session
     )
-    session.add(ticker)
-    session.commit()
-    data = get_stock_data_from_api(ticker_data)
-    await create_stock_data_from_dataframe(ticker=ticker_data.ticker, df=data, session=session)
 
 
-async def create_ticker(
-    ticker_model: Tickers, session: AsyncSession = get_session
+async def create_ticker_in_db(
+    ticker_model: Tickers, session: AsyncSession = Depends(dependency=get_session)
 ) -> None:
-    """
-    Create a new Ticker entry in the database.
-    """
-
-    bomba = Tickers(
-        ticker=ticker_model.ticker,
-        date_from=ticker_model.date_from,
-        date_to=ticker_model.date_to,
-    )
-    session.add(bomba)
+    """Create a new Ticker entry in the database."""
+    session.add(ticker_model)
     await session.commit()
 
 
 async def create_ticker_and_stock(
-    ticker_model: Tickers, session: AsyncSession = get_session
+    ticker_model: Tickers, session: AsyncSession = Depends(dependency=get_session)
 ) -> None:
     """
     Create a new Ticker entry in the database.
@@ -56,15 +45,18 @@ async def create_ticker_and_stock(
         await create_stock_data_from_dataframe(
             ticker=ticker_model.ticker, df=data, session=session
         )
-        await create_ticker(ticker_model=ticker_model, session=session)
+        await create_ticker_in_db(ticker_model=ticker_model, session=session)
+
     elif await check_ticker_ranges(
         ticker_model=ticker_model, in_db=in_db, session=session
     ):
-        await update_stock_data(tickers_model=ticker_model, in_db=in_db, session=session)
+        await update_stock_data(
+            tickers_model=ticker_model, in_db=in_db, session=session
+        )
 
 
 async def check_ticker_ranges(
-    ticker_model: Tickers, in_db: Tickers, session: AsyncSession = get_session
+    ticker_model: Tickers, in_db: Tickers, session: AsyncSession = Depends(dependency=get_session)
 ) -> bool:
     """
     Check if the date ranges of the ticker_model are outside the ranges of the in_db ticker.
@@ -74,6 +66,7 @@ async def check_ticker_ranges(
     :param in_db: Tickers instance with the current date ranges in the database.
     :return: True if the in_db ticker was updated, False otherwise.
     """
+    
     update_needed = False
     if ticker_model.date_from is None or ticker_model.date_to is None:
         update_needed = True
@@ -93,7 +86,7 @@ async def check_ticker_ranges(
 
 
 async def read_ticker(
-    ticker_symbol: str, session: AsyncSession = get_session
+    ticker_symbol: str, session: AsyncSession = Depends(dependency=get_session)
 ) -> Optional[Tickers]:
     """
     Read a Ticker entry from the database by ticker symbol.
@@ -107,12 +100,12 @@ async def read_ticker(
 
 
 async def update_ticker(
-    ticker_model: Tickers, session: AsyncSession = get_session
+    ticker_model: Tickers, session: AsyncSession = Depends(dependency=get_session)
 ) -> None:
     """
     Update an existing Ticker entry in the database.
     """
-    #ticker = await session.execute(select(Tickers).filter_by(ticker=ticker_model.ticker).first()
+    # ticker = await session.execute(select(Tickers).filter_by(ticker=ticker_model.ticker).first()
     ticker = await read_ticker(ticker_symbol=ticker_model.ticker, session=session)
     if not ticker:
         raise ValueError(f"No ticker found with the symbol {ticker_model.ticker}.")
@@ -121,28 +114,27 @@ async def update_ticker(
 
 
 async def delete_ticker(
-    ticker_symbol: str, session: AsyncSession = get_session
+    ticker_symbol: str, session: AsyncSession = Depends(dependency=get_session)
 ) -> None:
     """
     Delete a Ticker entry from the database by ticker symbol.
     """
-    async with session as session:
-        ticker = session.query(Tickers).filter_by(ticker=ticker_symbol).first()
-        if ticker:
-            session.delete(ticker)
-            session.commit()
-        else:
-            raise ValueError(f"No ticker found with the symbol {ticker_symbol}.")
+    ticker = await read_ticker(ticker_symbol=ticker_symbol, session=session)
+    if ticker:
+        await session.delete(ticker)
+        await session.commit()
+    else:
+        raise ValueError(f"No ticker found with the symbol {ticker_symbol}.")
 
 
-def df_to_db(session: Session, df: pd.DataFrame) -> bool:
+def df_to_db(session: Session, df: pd.DataFrame) -> None:
     conn = session.connection()
     df.to_sql(name="stock_data", con=conn, if_exists="replace", index=True)
     session.commit()
 
 
 async def create_stock_data_from_dataframe(
-    ticker: str, df: pd.DataFrame, session: AsyncSession = get_session
+    ticker: str, df: pd.DataFrame, session: AsyncSession = Depends(dependency=get_session)
 ) -> None:
     df["Ticker"] = ticker
     df.reset_index(inplace=True)
@@ -158,10 +150,8 @@ def get_stock_data_by_ticker(session: Session, ticker_model: Tickers) -> pd.Data
     return df
 
 
-
-
 async def update_stock_data(
-    tickers_model: Tickers, in_db: Tickers, session: AsyncSession = get_session
+    tickers_model: Tickers, in_db: Tickers, session: AsyncSession = Depends(dependency=get_session)
 ) -> None:
     if in_db.date_from is None or tickers_model.date_from < in_db.date_from:
         new_date_from = tickers_model.date_from
@@ -179,9 +169,8 @@ async def update_stock_data(
     await update_ticker(ticker_model=tmp_ticker_model, session=session)
 
 
-
 async def delete_stock(
-    ticker_id: int, session: AsyncSession = get_session
+    ticker_id: int, session: AsyncSession = Depends(dependency=get_session)
 ) -> Dict[str, str]:
     ticker = session.get(Tickers, ticker_id)
     if not ticker:
@@ -189,6 +178,6 @@ async def delete_stock(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Ticker not found {ticker_id}",
         )
-    session.delete(ticker)
-    session.commit()
+    await session.delete(ticker)
+    await session.commit()
     return {"message": "Ticker deleted successfully"}

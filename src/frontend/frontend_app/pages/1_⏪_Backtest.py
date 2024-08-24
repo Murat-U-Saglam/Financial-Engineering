@@ -41,7 +41,9 @@ columns = st.columns(3)
 with columns[0]:
     st.subheader("Ticker Data", divider="grey")
     ticker = st.text_input(
-        "Ticker", value=ticker_inputs["ticker"]["default"], max_chars=5
+        "Ticker",
+        value=ticker_inputs["ticker"]["default"],
+        max_chars=ticker_inputs["ticker"]["maxLength"],
     )
     micro_column = st.columns(2)
     with micro_column[0]:
@@ -115,7 +117,6 @@ def run_backtest(
         "risk_profile": risk_profile,
         "ta_indicators": ta_indicators,
     }
-
 
     response = run_backtest_endpoint(uri_endpoint="data/backtest", body=request_body)
     st.write("Backtest Running")

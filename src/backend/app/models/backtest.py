@@ -2,7 +2,7 @@ from pydantic import BaseModel, Field, PastDate
 from enum import Enum
 import datetime as dt
 from dateutil.relativedelta import relativedelta
-
+from app.models.SQLModel import Tickers
 
 class RiskLevel(Enum):
     HIGH = "high"
@@ -27,23 +27,6 @@ class TAIndicator(BaseModel):
     )
 
 
-class Tickers(BaseModel):
-    ticker: str = Field(default="AAPL", max_length=5)
-    date_to: PastDate = Field(default=(dt.datetime.now().date() - dt.timedelta(days=2)))
-    date_from: PastDate = Field(
-        default=(dt.datetime.now().date() - relativedelta(years=1))
-    )
-
-
-"""    
-    @field_validator("date_from")
-    def validate_date_from(cls, value, values):
-        if value >= values.data["date_to"]:
-            raise HTTPException(
-                status_code=400, detail="date_from must be smaller than date_to"
-            )
-        return value
-"""
 
 
 class BacktestModel(BaseModel):

@@ -11,5 +11,5 @@ def read_markdown_file(file_path: Path) -> str:
 st.title("Financial Engineering App")
 
 
-intro_md = read_markdown_file(file_path=Path("./app/README.md"))
+intro_md = read_markdown_file(file_path=Path("./frontend_app/README.md"))
 st.markdown(intro_md)

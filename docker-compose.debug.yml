@@ -14,7 +14,7 @@ services:
       - DEBUG=True # Optional: Set an environment variable to indicate debugging mode
     command: >
       bash -c "pip install debugpy && 
-               python -m debugpy --wait-for-client --listen 0.0.0.0:${FRONTEND_DEBUGGING_PORT} -m streamlit run app/0_👋_Introduction.py --server.port=${FRONTEND_PORT} --server.address=0.0.0.0 --server.runOnSave=True"
+               python -m debugpy --wait-for-client --listen 0.0.0.0:${FRONTEND_DEBUGGING_PORT} -m streamlit run frontend_app/0_👋_Introduction.py --server.port=${FRONTEND_PORT} --server.address=0.0.0.0 --server.runOnSave=True"
     volumes:
       - ./src/frontend:/frontend
     ports:

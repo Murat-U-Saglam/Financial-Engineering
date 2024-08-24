@@ -1,11 +1,11 @@
-from app.data.config import Config
-from app.models.models import SQLModel
+from app.db.config import Config
+from app.models.SQLModel import SQLModel
 from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlalchemy.ext.asyncio import (
-    AsyncSession,
     create_async_engine,
     async_sessionmaker,
 )
+from typing import AsyncGenerator
 
 
 DATABASE_URL = Config.DATABASE_URL
@@ -18,12 +18,12 @@ SessionLocal = async_sessionmaker(
 )
 
 
-async def create_db_and_tables():
+async def create_db_and_tables() -> None:
     async with engine.begin() as conn:
         await conn.run_sync(SQLModel.metadata.create_all)
 
 
-async def get_session() -> AsyncSession:
+async def get_session() -> AsyncGenerator[AsyncSession, None]:
     async with SessionLocal() as session:
         try:
             yield session

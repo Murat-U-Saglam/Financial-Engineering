@@ -1,3 +1,5 @@
+## Frequent commands
+
 mysql -u your_user -p your_database
 
 your_password

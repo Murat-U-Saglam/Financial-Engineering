@@ -11,7 +11,7 @@ services:
       - FRONTEND_PORT=${FRONTEND_PORT}
       - FRONTEND_DEBUGGING_PORT=${FRONTEND_DEBUGGING_PORT}
     command: 
-      ["bash", "-c", "streamlit run app/0_👋_Introduction.py --server.port=${FRONTEND_PORT} --server.address=0.0.0.0 --server.runOnSave=True"]
+      ["bash", "-c", "streamlit run frontend_app/0_👋_Introduction.py --server.port=${FRONTEND_PORT} --server.address=0.0.0.0 --server.runOnSave=True"]
     volumes:
       - ./src/frontend:/frontend
     ports:

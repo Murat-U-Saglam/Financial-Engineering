@@ -5,7 +5,6 @@ import os
 
 class Config:
     try:
-        # Load environment variables from .env file in root directory
         dotenv_values()
     except FileNotFoundError:
         exit(code="No .env file found in root directory. Please create one.")

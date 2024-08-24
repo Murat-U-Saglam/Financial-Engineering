@@ -1,7 +1,8 @@
 from fastapi import FastAPI, Depends
 from app.backtest.router import router as data_router
 from app.backtest.schema_endpoint import router as schema_router
-from app.data.database import create_db_and_tables, get_session
+from app.blackscholescalculator.router import router as blackscholes_router
+from app.db.database import create_db_and_tables, get_session
 from contextlib import asynccontextmanager
 import logging.config
 
@@ -50,4 +51,10 @@ app.include_router(
     prefix="/schema",
     tags=["schema"],
     dependencies=[Depends(dependency=get_session)],
+)
+
+app.include_router(
+    router=blackscholes_router,
+    prefix="/blackscholes",
+    tags=["blackscholes"],
 )

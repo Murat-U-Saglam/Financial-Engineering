@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends
 from app.models.backtest import BacktestModel
 from app.backtest.behaviour import process_backtest
 from . import logger
-from app.data.database import get_session
+from app.db.database import get_session
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 

@@ -30,8 +30,9 @@ async def implement_strategy(
     """
     df = df.copy()
 
-    rsi_threshold, risk_sma_multiplier, stop_loss, rsi_lookback = await digest_data(backtest)
-
+    rsi_threshold, risk_sma_multiplier, stop_loss, rsi_lookback = await digest_data(
+        backtest
+    )
 
     rsi_anchor = backtest.ta_indicators.rsi
     sma_lookback = backtest.ta_indicators.moving_average
@@ -42,12 +43,18 @@ async def implement_strategy(
 
     rsi = vbt.RSI.run(price, window=rsi_lookback)
 
-
     entries = fast_ma.ma_crossed_above(slow_ma) | rsi.rsi_below(rsi_anchor)
-    exits = fast_ma.ma_crossed_below(slow_ma) | rsi.rsi_above(rsi_anchor * rsi_threshold)
+    exits = fast_ma.ma_crossed_below(slow_ma) | rsi.rsi_above(
+        rsi_anchor * rsi_threshold
+    )
 
     pf = vbt.Portfolio.from_signals(
-        close=price, entries=entries, exits=exits, init_cash=backtest.initial_investment, fees=0.002, sl_stop=stop_loss
+        close=price,
+        entries=entries,
+        exits=exits,
+        init_cash=backtest.initial_investment,
+        fees=0.002,
+        sl_stop=stop_loss,
     )
 
     chart = pf.plot().to_json()
