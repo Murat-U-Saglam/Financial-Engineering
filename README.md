@@ -1,42 +1,45 @@
-1. Quantitative Stock Market Analysis and Strategy Backtesting
-## ETL Pipeline
-### Extract:
+# Financial Engineering Application: Simple Guide
 
-Fetch historical stock data (OHLCV) and financial indicators from APIs like Alpha Vantage, Yahoo Finance, or Quandl.
-Gather macroeconomic indicators (GDP, interest rates, etc.) from sources like FRED (Federal Reserve Economic Data).
-Transform:
+This app offers three main features to help you understand and test stock trading strategies:
 
-Clean the data, handle missing values, and normalize the data.
-Calculate quantitative metrics like Sharpe ratio, Sortino ratio, beta, alpha, and volatility.
-Implement technical indicators (e.g., Bollinger Bands, MACD, RSI).
-Load:
+## 1. Simple Backtest
 
-Store the cleaned and processed data in a relational database like PostgreSQL or SQLite.
-Quantitative Analysis & Backtesting
-Quantitative Models:
+This feature shows you how well a trading strategy would have performed in the past. It adapts to different risk levels (Low, Medium, High) which change how the strategy buys and sells stocks.
 
-Develop trading strategies using quantitative methods like mean reversion, momentum strategies, and pairs trading.
-Backtest the strategies using historical data to evaluate performance metrics (e.g., cumulative returns, drawdowns, win/loss ratio).
-Risk Management:
+### How it works:
 
-Implement risk management techniques like stop-loss, take-profit levels, and portfolio diversification.
-Use VaR (Value at Risk) and CVaR (Conditional Value at Risk) to assess potential losses.
-Streamlit Visualization
-Interactive Dashboards:
-Visualize historical stock data, trading signals, and strategy performance using interactive plots (e.g., candlestick charts, moving averages).
-Include backtesting results with metrics like Sharpe ratio, drawdowns, and cumulative returns.
-Allow users to adjust strategy parameters (e.g., lookback periods, thresholds) and see updated performance metrics in real-time.
+- The app looks at two things: moving averages (MA) and the Relative Strength Index (RSI).
+- It buys stocks when:
+  - The short-term average price goes above the long-term average, or
+  - The RSI (a measure of price momentum) falls below a certain point.
+- It sells stocks when:
+  - The short-term average falls below the long-term average, or
+  - The RSI goes above a certain point.
+- It also uses a "stop-loss" to limit potential losses.
 
+### Risk Levels:
 
+- Low Risk: Plays it safe with longer observation periods and smaller stop-losses.
+- Medium Risk: A balance between safety and potential gains.
+- High Risk: More aggressive, with shorter observation periods and larger stop-losses.
 
-## Flow
+The app shows you how this strategy would have performed, considering your initial investment and trading fees.
 
-Frontend requires data for X analysis (backtrading/ BlackSholes of a stock etc) sends request to backend
+## 2. Black-Scholes Model (With Stock Data)
 
-Backend accepts json which converts tto pydantic for validation.
+This feature helps estimate the value of stock options (bets on future stock prices).
 
-if not in db go to yf finance get data
-    
-save to db, 
-do backend process send response back to frontend.
+- It uses real stock data to calculate how much the stock price tends to change (volatility).
+- It creates a 3D graph showing how the option's value changes based on:
+  - The current stock price
+  - How long until the option expires
+  - The agreed-upon future stock price (strike price)
 
+## 3. Black-Scholes Model (Without Stock Data)
+
+Similar to the previous feature, but for when you don't have real stock data:
+
+- You manually input the stock price and how much you think it might change (volatility).
+- It then creates the same type of 3D graph to help you understand potential option values.
+
+This app helps you visualize and understand different aspects of stock trading and option pricing, from testing trading strategies to estimating option values.
