@@ -5,5 +5,4 @@ venv/
 *__pycache__/
 stock_data.db
 test*
-
-
+streamlit-venv/
