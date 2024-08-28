@@ -6,3 +6,5 @@ venv/
 stock_data.db
 test*
 streamlit-venv/
+.pytest_cache/
+.mypy_cache/
