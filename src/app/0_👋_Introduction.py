@@ -8,8 +8,8 @@ def read_markdown_file(file_path: Path) -> str:
     return file_path.read_text()
 
 
-st.title("Financial Engineering App")
+st.title("Financial Engineering ")
 
 
-intro_md = read_markdown_file(file_path=Path("./frontend_app/README.md"))
+intro_md = read_markdown_file(file_path=Path("./README.md"))
 st.markdown(intro_md)

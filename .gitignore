@@ -7,18 +7,3 @@ stock_data.db
 test*
 
 
-{
-  "initial_investment": 100,
-  "ticker_data": {
-    "ticker": "APPL",
-    "date_from": "2023-08-01",
-    "date_to": "2024-08-01"
-  },
-  "risk_profile": {
-    "risk_level": "medium"
-  },
-  "ta_indicators": {
-    "moving_average": 30,
-    "rsi": 14
-  }
-}

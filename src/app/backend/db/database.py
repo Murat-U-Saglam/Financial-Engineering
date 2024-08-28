@@ -1,5 +1,5 @@
-from app.db.config import Config
-from app.models.SQLModel import SQLModel
+from backend.db.config import Config
+from backend.models.SQLModel import SQLModel
 from sqlmodel.ext.asyncio.session import AsyncSession
 from sqlalchemy.ext.asyncio import (
     create_async_engine,

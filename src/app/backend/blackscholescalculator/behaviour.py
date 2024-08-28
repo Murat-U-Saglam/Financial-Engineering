@@ -1,16 +1,13 @@
 import numpy as np
 import plotly.graph_objects as go
 from scipy.stats import norm
-from app.models.blackschole import BlackScholesCalculator
-from app.db.utils import create_ticker_and_stock, get_stock_data_by_ticker
-from app.db.database import get_session
-from sqlmodel.ext.asyncio.session import AsyncSession
-from app.models.SQLModel import Tickers
-from fastapi import Depends
+from backend.models.blackschole import BlackScholesCalculator
+from backend.models.backtest import Tickers
 import pandas as pd
+from backend.db.inbound_data import get_stock_data_from_api
 
 
-async def get_latest_price(df: pd.DataFrame)  -> float:
+async def get_latest_price(df: pd.DataFrame) -> float:
     return df["Close"].iloc[-1]
 
 
@@ -20,12 +17,9 @@ async def calculate_historical_volatility(df: pd.DataFrame) -> float:
     ) * np.sqrt(len(df))
 
 
-async def calculate_black_scholes_from_ticker(
-    ticker: str, session: AsyncSession = Depends(dependency=get_session)
-) -> tuple[float, float]:
+async def calculate_black_scholes_from_ticker(ticker: str) -> tuple[float, float]:
     ticker = Tickers(ticker=ticker)
-    await create_ticker_and_stock(ticker_model=ticker, session=session)
-    df = await session.run_sync(get_stock_data_by_ticker, ticker)
+    df = await get_stock_data_from_api(ticker)
     spot_price = await get_latest_price(df)
     volatility = await calculate_historical_volatility(df)
     return (spot_price, volatility)

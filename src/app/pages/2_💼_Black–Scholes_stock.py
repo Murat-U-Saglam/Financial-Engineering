@@ -1,26 +1,20 @@
 import streamlit as st
-import httpx
 import json
 from typing import Dict
 import plotly
+from backend.models.blackschole import (
+    BlackScholesCalculatorFromTicker,
+)
+from backend.blackscholescalculator.router import calculate_from_ticker
+import asyncio
 
 st.set_page_config(layout="wide")
-
-
-def fetch_schema(uri_endpoint: str, full_response: bool = False):
-    url = f"http://backend:8001/{uri_endpoint}"
-    response = httpx.get(url, timeout=60)
-    if response.status_code != 200:
-        st.error(f"Failed to fetch schema: {response}")
-    if full_response:
-        return response.json()
-    return response.json()["properties"]
 
 
 st.title("Black-Scholes Option Pricing Model")
 st.write("This is the Black-Scholes Option Pricing Model page.")
 
-schema = fetch_schema(uri_endpoint="schema/blackscholes_from_ticker")
+schema = BlackScholesCalculatorFromTicker.schema()["properties"]
 no_of_columns = len(schema)
 cols = st.columns(no_of_columns)
 
@@ -49,13 +43,9 @@ with cols[3]:
     )
 
 
-def run_visualisation(post_params: Dict[str, int]):
-    response = httpx.post(
-        "http://backend:8001/blackscholes/calculate_from_ticker", json=post_params
-    )
-    if response.status_code != 200:
-        st.error(f"Failed to create visualisation: {response}")
-    return response.json()
+async def run_visualisation(post_params: Dict[str, int]):
+    post_params = BlackScholesCalculatorFromTicker(**post_params)
+    return await calculate_from_ticker(data=post_params)
 
 
 if st.button(label="Create Visualisation", use_container_width=True):
@@ -66,6 +56,6 @@ if st.button(label="Create Visualisation", use_container_width=True):
             "time_to_maturity": time_to_maturity,
             "risk_free_rate": interest_rate,
         }
-        graph = run_visualisation(post_params=post_params)
+        graph = asyncio.run(run_visualisation(post_params=post_params))
     chart = json.loads(graph)
     st.plotly_chart(plotly.io.from_json(chart))

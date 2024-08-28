@@ -1,8 +1,10 @@
 import streamlit as st
-import httpx
 from typing import Dict
 import json
 import plotly
+from backend.models.blackschole import BlackScholesCalculator
+from backend.blackscholescalculator.router import calculate_black_scholes
+import asyncio
 
 st.set_page_config(layout="wide")
 
@@ -10,15 +12,7 @@ st.title("Black-Scholes Option Pricing Model")
 st.write("This is the Black-Scholes Option Pricing Model page.")
 
 
-def fetch_schema(uri_endpoint: str, full_response: bool = False):
-    url = f"http://backend:8001/{uri_endpoint}"
-    response = httpx.get(url, timeout=60)
-    if full_response:
-        return response.json()
-    return response.json()["properties"]
-
-
-schema = fetch_schema(uri_endpoint="schema/blackscholes")
+schema = BlackScholesCalculator.schema()["properties"]
 no_of_columns = len(schema)
 cols = st.columns(no_of_columns)
 
@@ -59,13 +53,9 @@ with cols[4]:
     )
 
 
-def run_visualisation(post_params: Dict[str, int]):
-    response = httpx.post(
-        "http://backend:8001/blackscholes/visualise", json=post_params
-    )
-    if response.status_code != 200:
-        st.error(f"Failed to create visualisation: {response}")
-    return response.json()
+async def run_visualisation(post_params: Dict[str, int]):
+    post_params = BlackScholesCalculator(**post_params)
+    return await calculate_black_scholes(black_scholes=post_params)
 
 
 if st.button(label="Create Visualisation", use_container_width=True):
@@ -77,6 +67,6 @@ if st.button(label="Create Visualisation", use_container_width=True):
             "volatility": volatility,
             "risk_free_rate": interest_rate,
         }
-        graph = run_visualisation(post_params=post_params)
+        graph = asyncio.run(run_visualisation(post_params=post_params))
     chart = json.loads(graph)
     st.plotly_chart(plotly.io.from_json(chart))

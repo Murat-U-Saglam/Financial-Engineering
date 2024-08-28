@@ -2,7 +2,8 @@ from pydantic import BaseModel, Field, PastDate
 from enum import Enum
 import datetime as dt
 from dateutil.relativedelta import relativedelta
-from app.models.SQLModel import Tickers
+from typing import Optional
+
 
 class RiskLevel(Enum):
     HIGH = "high"
@@ -27,6 +28,30 @@ class TAIndicator(BaseModel):
     )
 
 
+class StockDataModel(BaseModel):
+    index: Optional[int] = Field(default=None, primary_key=True)
+    ticker: str = Field(default=None, max_length=10)
+    date: dt.date = Field(default=None)
+    open: float = Field(default=None)
+    high: float = Field(default=None)
+    low: float = Field(default=None)
+    close: float = Field(default=None)
+    volume: int = Field(default=None)
+
+    class Config:
+        orm_mode = True
+
+
+class Tickers(BaseModel):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    ticker: str = Field(default="AAPL", max_length=10)
+    date_to: PastDate = Field(default=(dt.datetime.now().date() - dt.timedelta(days=2)))
+    date_from: PastDate = Field(
+        default=(dt.datetime.now() + relativedelta(years=-1)).date()
+    )
+
+    class Config:
+        orm_mode = True
 
 
 class BacktestModel(BaseModel):

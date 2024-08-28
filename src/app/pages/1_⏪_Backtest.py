@@ -1,40 +1,27 @@
 import streamlit as st
-import httpx
 import datetime as dt
 import json
 from plotly.io import from_json
 import pandas as pd
+from backend.models.backtest import RiskLevel, TAIndicator, Tickers, BacktestModel
+from backend.backtest.router import get_backtest
+import asyncio
 
 st.set_page_config(page_title="Backtest", layout="wide")
 
 st.title(body="Backtest")
 
 
-def fetch_schema(uri_endpoint: str, full_response: bool = False):
-    url = f"http://backend:8001/{uri_endpoint}"
-    response = httpx.get(url, timeout=60)
-    if full_response:
-        return response.json()
-    return response.json()["properties"]
+async def run_backtest_endpoint(data: dict):
+    data = BacktestModel(**data)
+    return await get_backtest(backtest=data)
 
 
-def run_backtest_endpoint(uri_endpoint: str, body: dict):
-    url = f"http://backend:8001/{uri_endpoint}"
-    response = httpx.post(url=url, json=body, timeout=60)
-    if response.status_code != 200:
-        st.error(f"Backtest Failed: {response}")
-    return response.json()
+dict_schema = TAIndicator.schema()["properties"]
 
+ticker_inputs = Tickers.schema()["properties"]
 
-uri = "schema/ta"
-dict_schema = fetch_schema(uri_endpoint=uri)
-
-uri = "schema/ticker"
-ticker_inputs = fetch_schema(uri_endpoint=uri)
-
-uri = "schema/risk_level"
-risk_profile = fetch_schema(uri_endpoint=uri, full_response=True)
-
+risk_profile = [e.value for e in RiskLevel]
 
 columns = st.columns(3)
 
@@ -87,15 +74,13 @@ with columns[1]:
 
 with columns[2]:
     st.subheader(body="Risk Profile", divider="grey")
-    risk_level = st.selectbox(
-        label="Risk Level", options=risk_profile["$defs"]["RiskLevel"]["enum"], index=1
-    )
+    risk_level = st.selectbox(label="Risk Level", options=risk_profile, index=1)
     initial_investment = st.number_input(
         label="Initial Investment", value=100, min_value=1, max_value=1000000, step=1
     )
 
 
-def run_backtest(
+async def run_backtest(
     ticker: str,
     start_date: dt.datetime,
     end_date: dt.datetime,
@@ -118,7 +103,7 @@ def run_backtest(
         "ta_indicators": ta_indicators,
     }
 
-    response = run_backtest_endpoint(uri_endpoint="data/backtest", body=request_body)
+    response = await run_backtest_endpoint(data=request_body)
     st.write("Backtest Running")
 
     return response
@@ -126,13 +111,15 @@ def run_backtest(
 
 if st.button(label="Run Backtest"):
     with st.spinner():
-        result = run_backtest(
-            ticker=ticker,
-            start_date=start_date,
-            end_date=end_date,
-            risk_level=risk_level,
-            moving_average=moving_average,
-            rsi=rsi,
+        result = asyncio.run(
+            run_backtest(
+                ticker=ticker,
+                start_date=start_date,
+                end_date=end_date,
+                risk_level=risk_level,
+                moving_average=moving_average,
+                rsi=rsi,
+            )
         )
     data = pd.Series(json.loads(result[0]))
     series = pd.Series(data)
