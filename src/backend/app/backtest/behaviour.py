@@ -16,6 +16,8 @@ async def process_backtest(
     except ValidationError as e:
         raise HTTPException(status_code=404, detail=e.errors())
     await create_ticker_and_stock(ticker_model=backtest.ticker_data, session=session)
-    df = await session.run_sync(fn=get_stock_data_by_ticker, ticker_model=backtest.ticker_data)
+    df = await session.run_sync(
+        fn=get_stock_data_by_ticker, ticker_model=backtest.ticker_data
+    )
     meta_data, graph = await implement_strategy(df=df, backtest=backtest)
     return (meta_data, graph)

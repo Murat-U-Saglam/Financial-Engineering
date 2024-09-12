@@ -7,7 +7,6 @@ from app.models.blackschole import (
 )
 
 
-
 router = APIRouter()
 
 

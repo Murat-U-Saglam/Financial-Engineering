@@ -4,6 +4,7 @@ import datetime as dt
 from dateutil.relativedelta import relativedelta
 from app.models.SQLModel import Tickers
 
+
 class RiskLevel(Enum):
     HIGH = "high"
     MEDIUM = "medium"
@@ -25,8 +26,6 @@ class TAIndicator(BaseModel):
         le=100,
         description="Relative Strength Index - Moving Average length",
     )
-
-
 
 
 class BacktestModel(BaseModel):

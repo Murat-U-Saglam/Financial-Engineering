@@ -3,19 +3,31 @@ import httpx
 from typing import Dict
 import json
 import plotly
+import os
 
 st.set_page_config(layout="wide")
 
 st.title("Black-Scholes Option Pricing Model")
 st.write("This is the Black-Scholes Option Pricing Model page.")
 
+BACKEND_PORT = os.environ.get("BACKEND_PORT", 8001)
+
 
 def fetch_schema(uri_endpoint: str, full_response: bool = False):
-    url = f"http://backend:8001/{uri_endpoint}"
+    url = f"http://backend:{BACKEND_PORT}/{uri_endpoint}"
     response = httpx.get(url, timeout=60)
     if full_response:
         return response.json()
     return response.json()["properties"]
+
+
+def run_visualisation(post_params: Dict[str, int]):
+    response = httpx.post(
+        f"http://backend:{BACKEND_PORT}/blackscholes/visualise", json=post_params
+    )
+    if response.status_code != 200:
+        st.error(f"Failed to create visualisation: {response}")
+    return response.json()
 
 
 schema = fetch_schema(uri_endpoint="schema/blackscholes")
@@ -57,15 +69,6 @@ with cols[4]:
         min_value=schema["risk_free_rate"]["minimum"],
         value=schema["risk_free_rate"]["default"],
     )
-
-
-def run_visualisation(post_params: Dict[str, int]):
-    response = httpx.post(
-        "http://backend:8001/blackscholes/visualise", json=post_params
-    )
-    if response.status_code != 200:
-        st.error(f"Failed to create visualisation: {response}")
-    return response.json()
 
 
 if st.button(label="Create Visualisation", use_container_width=True):

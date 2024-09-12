@@ -1,42 +1,32 @@
-1. Quantitative Stock Market Analysis and Strategy Backtesting
-## ETL Pipeline
-### Extract:
+# Project 
+This project is a basic fullstack application that utilises fastapi for the backend, streamlit for the frontend and stores data in a data. My aim is was to upskill in building fullstack applications and learn more about financial tooling.
 
-Fetch historical stock data (OHLCV) and financial indicators from APIs like Alpha Vantage, Yahoo Finance, or Quandl.
-Gather macroeconomic indicators (GDP, interest rates, etc.) from sources like FRED (Federal Reserve Economic Data).
-Transform:
-
-Clean the data, handle missing values, and normalize the data.
-Calculate quantitative metrics like Sharpe ratio, Sortino ratio, beta, alpha, and volatility.
-Implement technical indicators (e.g., Bollinger Bands, MACD, RSI).
-Load:
-
-Store the cleaned and processed data in a relational database like PostgreSQL or SQLite.
-Quantitative Analysis & Backtesting
-Quantitative Models:
-
-Develop trading strategies using quantitative methods like mean reversion, momentum strategies, and pairs trading.
-Backtest the strategies using historical data to evaluate performance metrics (e.g., cumulative returns, drawdowns, win/loss ratio).
-Risk Management:
-
-Implement risk management techniques like stop-loss, take-profit levels, and portfolio diversification.
-Use VaR (Value at Risk) and CVaR (Conditional Value at Risk) to assess potential losses.
-Streamlit Visualization
-Interactive Dashboards:
-Visualize historical stock data, trading signals, and strategy performance using interactive plots (e.g., candlestick charts, moving averages).
-Include backtesting results with metrics like Sharpe ratio, drawdowns, and cumulative returns.
-Allow users to adjust strategy parameters (e.g., lookback periods, thresholds) and see updated performance metrics in real-time.
+## Usage
+To use this project you can go to the following [link](https://financial-engineering-flattened.streamlit.app/)
+This version is flattened to use streamlit's services and doesn't utilise a database
 
 
+### Local
+1. Clone the repository using the following command:
+  ```
+  git clone <repository_url>
+  ```
 
-## Flow
+2. Navigate to the project directory:
+  ```
+  cd Financial_Engineering
+  ```
 
-Frontend requires data for X analysis (backtrading/ BlackSholes of a stock etc) sends request to backend
+3. Run the project using Docker Compose:
+  ```
+  docker-compose up
+  ```
 
-Backend accepts json which converts tto pydantic for validation.
+Alternatively, if you have a separate debug configuration file, you can use the following command:
+  ```
+  docker-compose -f docker-compose.debug.yml up
+  ```
 
-if not in db go to yf finance get data
-    
-save to db, 
-do backend process send response back to frontend.
+If you prefer to run the project using a launch configuration, you can configure your `launch.json` file accordingly.
 
+Please note that you may need to install Docker and Docker Compose before running the project.

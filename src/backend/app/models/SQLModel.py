@@ -23,16 +23,15 @@ class Tickers(SQLModel, table=True):
     class Config:
         arbitrary_types_allowed = True
         validate_assignment = True
+
     id: Optional[int] = Field(default=None, primary_key=True)
     ticker: str = Field(
         default="AAPL",
         max_length=10,
     )
-    date_to: PastDate = Field(default= (dt.datetime.now().date() - dt.timedelta(days=2)), sa_type=Date)
+    date_to: PastDate = Field(
+        default=(dt.datetime.now().date() - dt.timedelta(days=2)), sa_type=Date
+    )
     date_from: PastDate = Field(
         default=(dt.datetime.now() + relativedelta(years=-1)).date(), sa_type=Date
     )
-
-
-
-

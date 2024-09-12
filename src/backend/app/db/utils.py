@@ -10,7 +10,9 @@ from fastapi import HTTPException, status, Depends
 from . import logger
 
 
-async def stock_data(ticker_data: Tickers, session: AsyncSession = Depends(dependency=get_session)) -> None:
+async def stock_data(
+    ticker_data: Tickers, session: AsyncSession = Depends(dependency=get_session)
+) -> None:
     """
     stock_data is a function that is used to get stock data from the Yahoo Finance API and store it in the database.
     :param ticker_data: Tickers
@@ -56,7 +58,9 @@ async def create_ticker_and_stock(
 
 
 async def check_ticker_ranges(
-    ticker_model: Tickers, in_db: Tickers, session: AsyncSession = Depends(dependency=get_session)
+    ticker_model: Tickers,
+    in_db: Tickers,
+    session: AsyncSession = Depends(dependency=get_session),
 ) -> bool:
     """
     Check if the date ranges of the ticker_model are outside the ranges of the in_db ticker.
@@ -66,7 +70,7 @@ async def check_ticker_ranges(
     :param in_db: Tickers instance with the current date ranges in the database.
     :return: True if the in_db ticker was updated, False otherwise.
     """
-    
+
     update_needed = False
     if ticker_model.date_from is None or ticker_model.date_to is None:
         update_needed = True
@@ -134,7 +138,9 @@ def df_to_db(session: Session, df: pd.DataFrame) -> None:
 
 
 async def create_stock_data_from_dataframe(
-    ticker: str, df: pd.DataFrame, session: AsyncSession = Depends(dependency=get_session)
+    ticker: str,
+    df: pd.DataFrame,
+    session: AsyncSession = Depends(dependency=get_session),
 ) -> None:
     df["Ticker"] = ticker
     df.reset_index(inplace=True)
@@ -151,7 +157,9 @@ def get_stock_data_by_ticker(session: Session, ticker_model: Tickers) -> pd.Data
 
 
 async def update_stock_data(
-    tickers_model: Tickers, in_db: Tickers, session: AsyncSession = Depends(dependency=get_session)
+    tickers_model: Tickers,
+    in_db: Tickers,
+    session: AsyncSession = Depends(dependency=get_session),
 ) -> None:
     if in_db.date_from is None or tickers_model.date_from < in_db.date_from:
         new_date_from = tickers_model.date_from

@@ -10,7 +10,7 @@ from fastapi import Depends
 import pandas as pd
 
 
-async def get_latest_price(df: pd.DataFrame)  -> float:
+async def get_latest_price(df: pd.DataFrame) -> float:
     return df["Close"].iloc[-1]
 
 

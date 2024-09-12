@@ -6,10 +6,14 @@ services:
       args:
         - FRONTEND_PORT=${FRONTEND_PORT}
         - FRONTEND_DEBUGGING_PORT=${FRONTEND_DEBUGGING_PORT}
+        - BACKEND_PORT=${BACKEND_PORT}
+        - BACKEND_DEBUGGING_PORT=${BACKEND_DEBUGGING_PORT}
     container_name: ${FRONTEND_CONTAINER_NAME}
     environment:
       - FRONTEND_PORT=${FRONTEND_PORT}
       - FRONTEND_DEBUGGING_PORT=${FRONTEND_DEBUGGING_PORT}
+      - BACKEND_PORT=${BACKEND_PORT}
+      - BACKEND_DEBUGGING_PORT=${BACKEND_DEBUGGING_PORT}
     command: 
       ["bash", "-c", "streamlit run frontend_app/0_👋_Introduction.py --server.port=${FRONTEND_PORT} --server.address=0.0.0.0 --server.runOnSave=True"]
     volumes:
@@ -35,11 +39,12 @@ services:
       - MYSQL_DATABASE=${MYSQL_DATABASE}
       - MYSQL_USER=${MYSQL_USER}
       - MYSQL_PASSWORD=${MYSQL_PASSWORD}      
-    command: uvicorn app.main:app --reload --workers 1 --host 0.0.0.0 --port ${BACKEND_PORT}
+    command: uvicorn app.main:app --reload --workers 3 --host 0.0.0.0 --port ${BACKEND_PORT}
     ports:
       - "${BACKEND_PORT}:${BACKEND_PORT}"
     volumes:
       - ./src/backend:/backend
+      - ./src/backend/app/logs/master.log:/app/logs/master.log
     depends_on:
       - db
 

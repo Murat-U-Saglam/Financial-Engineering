@@ -6,7 +6,7 @@
       "request": "attach",
       "connect": {
         "host": "localhost",
-        "port": 1112 // Replace 1112 with your actual FRONTEND_DEBUGGING_PORT
+        "port": 6162 // Replace 1112 with your actual FRONTEND_DEBUGGING_PORT
       },
       "pathMappings": [
         {
@@ -21,7 +21,7 @@
       "request": "attach",
       "connect": {
         "host": "localhost",
-        "port": 1111 // Replace 1111 with your actual BACKEND_DEBUGGING_PORT
+        "port": 8000 // Replace 1111 with your actual BACKEND_DEBUGGING_PORT
       },
       "pathMappings": [
         {

@@ -4,14 +4,20 @@ import datetime as dt
 import json
 from plotly.io import from_json
 import pandas as pd
+import os
 
 st.set_page_config(page_title="Backtest", layout="wide")
 
 st.title(body="Backtest")
 
+BACKEND_PORT = os.environ.get("BACKEND_PORT", 8001)
+
+
+st.write(f"{BACKEND_PORT}")
+
 
 def fetch_schema(uri_endpoint: str, full_response: bool = False):
-    url = f"http://backend:8001/{uri_endpoint}"
+    url = f"http://backend:{BACKEND_PORT}/{uri_endpoint}"
     response = httpx.get(url, timeout=60)
     if full_response:
         return response.json()
@@ -19,7 +25,7 @@ def fetch_schema(uri_endpoint: str, full_response: bool = False):
 
 
 def run_backtest_endpoint(uri_endpoint: str, body: dict):
-    url = f"http://backend:8001/{uri_endpoint}"
+    url = f"http://backend:{BACKEND_PORT}/{uri_endpoint}"
     response = httpx.post(url=url, json=body, timeout=60)
     if response.status_code != 200:
         st.error(f"Backtest Failed: {response}")

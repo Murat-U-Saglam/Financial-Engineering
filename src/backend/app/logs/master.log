@@ -14,3 +14,5 @@
 2024-08-16 14:44:13 - yfinance - ERROR - $APPL: possibly delisted; No price data found  (1d 2023-08-16 -> 2024-08-14)
 2024-08-16 14:44:33 - yfinance - ERROR - $APPL: possibly delisted; No price data found  (1d 2023-08-16 -> 2024-08-14)
 2024-08-16 14:44:45 - yfinance - ERROR - $APPL: possibly delisted; No price data found  (1d 2023-08-16 -> 2024-08-14)
+2024-09-12 20:07:52 - yfinance - ERROR - Failed to get ticker 'AAPL' reason: HTTPSConnectionPool(host='fc.yahoo.com', port=443): Max retries exceeded with url: / (Caused by NewConnectionError('<urllib3.connection.HTTPSConnection object at 0x7f0b4d2d2560>: Failed to establish a new connection: [Errno -3] Temporary failure in name resolution'))
+2024-09-12 20:07:52 - yfinance - ERROR - $AAPL: possibly delisted; No timezone found
